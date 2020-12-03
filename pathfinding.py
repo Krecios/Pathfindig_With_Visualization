@@ -115,9 +115,9 @@ def randomWalk():
         availableCount = 0
         if currentCoordinates == endCoordinates:
             print("Path found:")
-            print(path)
-            checkSolution(path)
-            return path
+            print(visitedCoordinates)
+            checkSolution(visitedCoordinates)
+            return visitedCoordinates
         right = [currentCoordinates[0], currentCoordinates[1] + 1]
         left = [currentCoordinates[0], currentCoordinates[1] - 1]
         up = [currentCoordinates[0] - 1, currentCoordinates[1]]
