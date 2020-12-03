@@ -6,13 +6,13 @@ endCoordinates = []
 wallCoordinates = []
 
 
-def ReadLabirynth():
+def readLab():
     file = open("labirinth.txt", "r")
     for line in file:
         labirynth.append(line[:-1])
 
 
-def WhereIsStart():
+def findStart():
     rowCounter = 0
     collumnCounter = 0
     for line in labirynth:
@@ -26,7 +26,7 @@ def WhereIsStart():
         collumnCounter = collumnCounter + 1
 
 
-def WhereIsEnd():
+def findEnd():
     rowCounter = 0
     collumnCounter = 0
     for line in labirynth:
@@ -40,7 +40,7 @@ def WhereIsEnd():
         collumnCounter = collumnCounter + 1
 
 
-def WhereAreWalls():
+def findWalls():
     listOfWalls = []
     rowCounter = 0
     collumnCounter = 0
@@ -54,14 +54,14 @@ def WhereAreWalls():
     return listOfWalls
 
 
-def IsCoordinateAWall(coordinate):
+def isWall(coordinate):
     for coord in wallCoordinates:
         if(coordinate == coord):
             return True
     return False
 
 
-def RandomWalk():
+def randomWalk():
     currentCoordinates = startCoordinates
     path = []
     while True:
@@ -76,24 +76,24 @@ def RandomWalk():
         left = [currentCoordinates[0], currentCoordinates[1] - 1]
         up = [currentCoordinates[0] - 1, currentCoordinates[1]]
         down = [currentCoordinates[0] + 1, currentCoordinates[1]]
-        if IsCoordinateAWall(right) == False:
+        if isWall(right) == False:
             available.append(right)
             availableCount = availableCount + 1
-        if IsCoordinateAWall(left) == False:
+        if isWall(left) == False:
             available.append(left)
             availableCount = availableCount + 1
-        if IsCoordinateAWall(up) == False:
+        if isWall(up) == False:
             available.append(up)
             availableCount = availableCount + 1
-        if IsCoordinateAWall(down) == False:
+        if isWall(down) == False:
             available.append(down)
             availableCount = availableCount + 1
         currentCoordinates = available[random.randint(0, availableCount - 1)]
 
 
-ReadLabirynth()
-startCoordinates = WhereIsStart()
-endCoordinates = WhereIsEnd()
+readLab()
+startCoordinates = findStart()
+endCoordinates = findEnd()
 print(endCoordinates)
-wallCoordinates = WhereAreWalls()
-RandomWalk()
+wallCoordinates = findWalls()
+randomWalk()
