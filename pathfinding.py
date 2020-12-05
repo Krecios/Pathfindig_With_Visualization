@@ -135,9 +135,14 @@ def randomWalk():
             available.append(down)
             availableCount = availableCount + 1
         if availableCount == 0:
+            if(len(path) == 0):
+                print('No solution')
+                return -1
             currentCoordinates = path.pop()
+            #print('Current coords: ', currentCoordinates)
             continue
         currentCoordinates = available[random.randint(0, availableCount - 1)]
+        #print('Current coords: ', currentCoordinates)
         visitedCoordinates.append(currentCoordinates)
         path.append(currentCoordinates)
 
@@ -148,4 +153,5 @@ startCoordinates = findStart()
 endCoordinates = findEnd()
 wallCoordinates = findWalls()
 wholePath = randomWalk()
-drawSolution()
+if(wholePath != -1):
+    drawSolution()
