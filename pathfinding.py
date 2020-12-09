@@ -1,4 +1,20 @@
 import random
+import pygame
+import sys
+
+width = 1000
+window = pygame.display.set_mode((width, width))
+pygame.display.set_caption("Pathfinding")
+red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+yellow = (255, 255, 0)
+white = (255, 255, 255)
+black = (0, 0, 0)
+purple = (128, 0, 128)
+orange = (255, 165, 0)
+grey = (128, 128, 128)
+turqoise = (64, 224, 208)
 
 labirynth = []
 startCoordinates = []
@@ -10,16 +26,103 @@ rowCount = 0
 collumnCount = 0
 
 
+class Node:
+    def __init__(self, row, collumn, width, totalRows):
+        self.row = row
+        self.collumn = collumn
+        self.x = row * collumn
+        self.y = collumn * row
+        self.color = white
+        self.neighbors = []
+        self.width = width
+        self.totalRows = totalRows
+
+    def getPosition(self):
+        return self.row, self.collumn
+
+    def isVisited(self):
+        return self.color == red
+
+    def isAvailable(self):
+        return self.color == green
+
+    def isWall(self):
+        return self.color == black
+
+    def isStart(self):
+        return self.color == orange
+
+    def isEnd(self):
+        return self.color == turqoise
+
+    def isPath(self):
+        return self.color == purple
+
+    def reset(self):
+        return self.color == white
+
+    def makeVisited(self):
+        self.color = red
+
+    def makeAvailable(self):
+        self.color = green
+
+    def makeWall(self):
+        self.color = black
+
+    def makeStart(self):
+        self.color = orange
+
+    def makeEnd(self):
+        self.color = turqoise
+
+    def makePath(self):
+        self.color = purple
+
+    def makeReset(self):
+        self.color = white
+
+    def draw(self, win):
+        pygame.draw.rect(
+            win, self.color, (self.x, self.y, self.width, self.width))
+
+
+def makeGrid(rows, collumns, width):
+    grid = []
+    gap = width // rows
+    for i in range(rows):
+        grid.append([])
+        for j in range(collumns):
+            node = Node(i, j, gap, rows)
+            grid[i].append(node)
+    return grid
+
+
+def drawGrid(win, rows, collumns, width):
+    gap = width // rows
+    for i in range(rows + 1):
+        pygame.draw.line(win, grey, (0, i * gap), (width, i * gap))
+        for j in range(collumns + 1):
+            pygame.draw.line(win, grey, (j * gap, 0), (j * gap, width))
+
+
+def draw(win, grid, rows, collumns, width):
+    win.fill(white)
+    for row in grid:
+        for node in row:
+            node.draw(win)
+    drawGrid(win, rows, collumns, width)
+    pygame.display.update()
+
+
 def readLabirinth():
     file = open("labirinth.txt", "r")
     for line in file:
         labirynth.append(line[:-1])
-
-
-def getDimensions():
     rowCount = len(labirynth[0])
     collumnCount = len(labirynth)
     print("Rows : " + str(rowCount) + ", Collumns: " + str(collumnCount))
+    return rowCount, collumnCount
 
 
 def findStart():
@@ -147,6 +250,7 @@ def randomWalk():
         path.append(currentCoordinates)
 
 
+'''
 readLabirinth()
 getDimensions()
 startCoordinates = findStart()
@@ -155,3 +259,13 @@ wallCoordinates = findWalls()
 wholePath = randomWalk()
 if(wholePath != -1):
     drawSolution()
+'''
+rowCount, collumnCount = readLabirinth()
+grid = makeGrid(rowCount, collumnCount, width)
+run = True
+while run:
+    draw(window, grid, rowCount, collumnCount, width)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+pygame.quit()
