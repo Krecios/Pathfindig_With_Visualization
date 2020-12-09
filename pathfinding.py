@@ -1,9 +1,8 @@
 import random
 import pygame
 import sys
+import time
 
-width = 1000
-window = pygame.display.set_mode((width, width))
 pygame.display.set_caption("Pathfinding")
 red = (255, 0, 0)
 green = (0, 255, 0)
@@ -30,8 +29,8 @@ class Node:
     def __init__(self, row, collumn, width, totalRows):
         self.row = row
         self.collumn = collumn
-        self.x = row * collumn
-        self.y = collumn * row
+        self.x = row * width
+        self.y = collumn * width
         self.color = white
         self.neighbors = []
         self.width = width
@@ -94,15 +93,21 @@ def makeGrid(rows, collumns, width):
         grid.append([])
         for j in range(collumns):
             node = Node(i, j, gap, rows)
+            if isWall([i, j]):
+                node.makeWall()
+            elif [i, j] == startCoordinates:
+                node.makeStart()
+            elif [i, j] == endCoordinates:
+                node.makeEnd()
             grid[i].append(node)
     return grid
 
 
 def drawGrid(win, rows, collumns, width):
     gap = width // rows
-    for i in range(rows + 1):
+    for i in range(collumns):
         pygame.draw.line(win, grey, (0, i * gap), (width, i * gap))
-        for j in range(collumns + 1):
+        for j in range(rows):
             pygame.draw.line(win, grey, (j * gap, 0), (j * gap, width))
 
 
@@ -115,10 +120,13 @@ def draw(win, grid, rows, collumns, width):
     pygame.display.update()
 
 
-def readLabirinth():
-    file = open("labirinth.txt", "r")
+def readLabyrinth(filename):
+    file = open(filename, "r")
     for line in file:
-        labirynth.append(line[:-1])
+        if line[:-1] == '0' or line[:-1] == 1:
+            labirynth.append(line)
+        else:
+            labirynth.append(line[:-1])
     rowCount = len(labirynth[0])
     collumnCount = len(labirynth)
     print("Rows : " + str(rowCount) + ", Collumns: " + str(collumnCount))
@@ -131,7 +139,7 @@ def findStart():
     for line in labirynth:
         for char in line:
             if char == "S":
-                print("The start of the labirinth is a coordinates: X: " +
+                print("The start of the labyrinth is a coordinates: X: " +
                       str(rowCounter) + " Y: " + str(collumnCounter))
                 return [rowCounter, collumnCounter]
             rowCounter = rowCounter + 1
@@ -145,7 +153,7 @@ def findEnd():
     for line in labirynth:
         for char in line:
             if char == "E":
-                print("The end of the labirinth is a coordinates: X: " +
+                print("The end of the labyrinth is a coordinates: X: " +
                       str(rowCounter) + " Y: " + str(collumnCounter))
                 return [rowCounter, collumnCounter]
             rowCounter = rowCounter + 1
@@ -195,8 +203,8 @@ def checkSolution(path):
 
 def drawSolution():
     file = open("output.txt", "w")
-    for y in range(12):
-        for x in range(24):
+    for y in range(rowCount):
+        for x in range(collumnCount):
             if [x, y] == startCoordinates:
                 file.write("S")
             elif [x, y] == endCoordinates:
@@ -250,17 +258,15 @@ def randomWalk():
         path.append(currentCoordinates)
 
 
-'''
-readLabirinth()
-getDimensions()
+rowCount, collumnCount = readLabyrinth('labyrinth.txt')
 startCoordinates = findStart()
 endCoordinates = findEnd()
 wallCoordinates = findWalls()
 wholePath = randomWalk()
 if(wholePath != -1):
     drawSolution()
-'''
-rowCount, collumnCount = readLabirinth()
+width = 1000
+window = pygame.display.set_mode((width, collumnCount * (width // rowCount)))
 grid = makeGrid(rowCount, collumnCount, width)
 run = True
 while run:
