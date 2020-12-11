@@ -45,7 +45,7 @@ class Node:
     def isAvailable(self):
         return self.color == green
 
-    def isWall(self):
+    def isPresent(self):
         return self.color == black
 
     def isStart(self):
@@ -93,12 +93,14 @@ def makeGrid(rows, collumns, width):
         grid.append([])
         for j in range(collumns):
             node = Node(i, j, gap, rows)
-            if isWall([i, j]):
+            if isPresent([i, j], wallCoordinates):
                 node.makeWall()
             elif [i, j] == startCoordinates:
                 node.makeStart()
             elif [i, j] == endCoordinates:
                 node.makeEnd()
+            elif isPresent([i, j], wholePath):
+                node.makeVisited()
             grid[i].append(node)
     return grid
 
@@ -175,8 +177,8 @@ def findWalls():
     return listOfWalls
 
 
-def isWall(coordinate):
-    for coord in wallCoordinates:
+def isPresent(coordinate, array):
+    for coord in array:
         if(coordinate == coord):
             return True
     return False
@@ -203,13 +205,13 @@ def checkSolution(path):
 
 def drawSolution():
     file = open("output.txt", "w")
-    for y in range(rowCount):
-        for x in range(collumnCount):
+    for y in range(rowCount - 1):
+        for x in range(collumnCount + 1):
             if [x, y] == startCoordinates:
                 file.write("S")
             elif [x, y] == endCoordinates:
                 file.write("E")
-            elif isWall([x, y]) == True:
+            elif isPresent([x, y], wallCoordinates) == True:
                 file.write("1")
             elif isVisited(wholePath, [x, y]) == True:
                 file.write("V")
@@ -233,16 +235,16 @@ def randomWalk():
         left = [currentCoordinates[0], currentCoordinates[1] - 1]
         up = [currentCoordinates[0] - 1, currentCoordinates[1]]
         down = [currentCoordinates[0] + 1, currentCoordinates[1]]
-        if isWall(right) == False and isVisited(visitedCoordinates, right) == False and right != startCoordinates:
+        if isPresent(right, wallCoordinates) == False and isVisited(visitedCoordinates, right) == False and right != startCoordinates:
             available.append(right)
             availableCount = availableCount + 1
-        if isWall(left) == False and isVisited(visitedCoordinates, left) == False and left != startCoordinates:
+        if isPresent(left, wallCoordinates) == False and isVisited(visitedCoordinates, left) == False and left != startCoordinates:
             available.append(left)
             availableCount = availableCount + 1
-        if isWall(up) == False and isVisited(visitedCoordinates, up) == False and up != startCoordinates:
+        if isPresent(up, wallCoordinates) == False and isVisited(visitedCoordinates, up) == False and up != startCoordinates:
             available.append(up)
             availableCount = availableCount + 1
-        if isWall(down) == False and isVisited(visitedCoordinates, down) == False and down != startCoordinates:
+        if isPresent(down, wallCoordinates) == False and isVisited(visitedCoordinates, down) == False and down != startCoordinates:
             available.append(down)
             availableCount = availableCount + 1
         if availableCount == 0:
@@ -262,16 +264,19 @@ rowCount, collumnCount = readLabyrinth('labyrinth.txt')
 startCoordinates = findStart()
 endCoordinates = findEnd()
 wallCoordinates = findWalls()
-wholePath = randomWalk()
-if(wholePath != -1):
-    drawSolution()
 width = 1000
 window = pygame.display.set_mode((width, collumnCount * (width // rowCount)))
 grid = makeGrid(rowCount, collumnCount, width)
+wholePath = randomWalk()
+if(wholePath != -1):
+    drawSolution()
 run = True
 while run:
     draw(window, grid, rowCount, collumnCount, width)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                grid = makeGrid(rowCount, collumnCount, width)
 pygame.quit()
