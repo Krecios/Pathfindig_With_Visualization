@@ -18,6 +18,7 @@ turqoise = (64, 224, 208)
 labirynth = []
 startCoordinates = []
 endCoordinates = []
+currentCoordinates = []
 wallCoordinates = []
 visitedCoordinates = []
 wholePath = []
@@ -66,6 +67,9 @@ class Node:
     def makeAvailable(self):
         self.color = green
 
+    def makeCurrent(self):
+        self.color = blue
+
     def makeWall(self):
         self.color = black
 
@@ -99,7 +103,9 @@ def makeGrid(rows, collumns, width):
                 node.makeStart()
             elif [i, j] == endCoordinates:
                 node.makeEnd()
-            elif isPresent([i, j], wholePath):
+            elif [i, j] == currentCoordinates:
+                node.makeCurrent()
+            elif isPresent([i, j], visitedCoordinates):
                 node.makeVisited()
             grid[i].append(node)
     return grid
@@ -220,57 +226,56 @@ def drawSolution():
         file.write("\n")
 
 
-def randomWalk():
-    currentCoordinates = startCoordinates
-    path = []
-    while True:
-        available = []
-        availableCount = 0
-        if currentCoordinates == endCoordinates:
-            print("Path found:")
-            print(visitedCoordinates)
-            checkSolution(visitedCoordinates)
-            return visitedCoordinates
-        right = [currentCoordinates[0], currentCoordinates[1] + 1]
-        left = [currentCoordinates[0], currentCoordinates[1] - 1]
-        up = [currentCoordinates[0] - 1, currentCoordinates[1]]
-        down = [currentCoordinates[0] + 1, currentCoordinates[1]]
-        if isPresent(right, wallCoordinates) == False and isVisited(visitedCoordinates, right) == False and right != startCoordinates:
-            available.append(right)
-            availableCount = availableCount + 1
-        if isPresent(left, wallCoordinates) == False and isVisited(visitedCoordinates, left) == False and left != startCoordinates:
-            available.append(left)
-            availableCount = availableCount + 1
-        if isPresent(up, wallCoordinates) == False and isVisited(visitedCoordinates, up) == False and up != startCoordinates:
-            available.append(up)
-            availableCount = availableCount + 1
-        if isPresent(down, wallCoordinates) == False and isVisited(visitedCoordinates, down) == False and down != startCoordinates:
-            available.append(down)
-            availableCount = availableCount + 1
-        if availableCount == 0:
-            if(len(path) == 0):
-                print('No solution')
-                return -1
-            currentCoordinates = path.pop()
-            #print('Current coords: ', currentCoordinates)
-            continue
-        currentCoordinates = available[random.randint(0, availableCount - 1)]
-        #print('Current coords: ', currentCoordinates)
-        visitedCoordinates.append(currentCoordinates)
-        path.append(currentCoordinates)
+def randomStep(currentCoordinates):
+    available = []
+    availableCount = 0
+    if currentCoordinates == endCoordinates:
+        print("Path found:")
+        print(visitedCoordinates)
+        checkSolution(visitedCoordinates)
+        return -1
+    right = [currentCoordinates[0], currentCoordinates[1] + 1]
+    left = [currentCoordinates[0], currentCoordinates[1] - 1]
+    up = [currentCoordinates[0] - 1, currentCoordinates[1]]
+    down = [currentCoordinates[0] + 1, currentCoordinates[1]]
+    if isPresent(right, wallCoordinates) == False and isVisited(visitedCoordinates, right) == False and right != startCoordinates:
+        available.append(right)
+        availableCount = availableCount + 1
+    if isPresent(left, wallCoordinates) == False and isVisited(visitedCoordinates, left) == False and left != startCoordinates:
+        available.append(left)
+        availableCount = availableCount + 1
+    if isPresent(up, wallCoordinates) == False and isVisited(visitedCoordinates, up) == False and up != startCoordinates:
+        available.append(up)
+        availableCount = availableCount + 1
+    if isPresent(down, wallCoordinates) == False and isVisited(visitedCoordinates, down) == False and down != startCoordinates:
+        available.append(down)
+        availableCount = availableCount + 1
+    if availableCount == 0:
+        if(len(wholePath) == 0):
+            print('No solution')
+            return -1
+        currentCoordinates = wholePath.pop()
+        return currentCoordinates
+    # print('Current coords: ', currentCoordinates)
+    currentCoordinates = available[random.randint(0, availableCount - 1)]
+    # print('Current coords: ', currentCoordinates)
+    visitedCoordinates.append(currentCoordinates)
+    wholePath.append(currentCoordinates)
+    return currentCoordinates
 
 
 rowCount, collumnCount = readLabyrinth('labyrinth.txt')
 startCoordinates = findStart()
+currentCoordinates = startCoordinates
 endCoordinates = findEnd()
 wallCoordinates = findWalls()
 width = 1000
 window = pygame.display.set_mode((width, collumnCount * (width // rowCount)))
 grid = makeGrid(rowCount, collumnCount, width)
-wholePath = randomWalk()
 if(wholePath != -1):
     drawSolution()
 run = True
+execute = False
 while run:
     draw(window, grid, rowCount, collumnCount, width)
     for event in pygame.event.get():
@@ -278,5 +283,9 @@ while run:
             run = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                grid = makeGrid(rowCount, collumnCount, width)
+                while(currentCoordinates != -1):
+                    currentCoordinates = randomStep(currentCoordinates)
+                    grid = makeGrid(rowCount, collumnCount, width)
+                    pygame.time.wait(1)
+                    draw(window, grid, rowCount, collumnCount, width)
 pygame.quit()
