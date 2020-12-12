@@ -1,6 +1,5 @@
 import random
 import pygame
-import sys
 import time
 
 pygame.display.set_caption("Pathfinding")
@@ -209,6 +208,10 @@ def checkSolution(path):
     print("Correct")
 
 
+def heuristicFunction(currentCoordinates):
+    return (abs(currentCoordinates[0] - endCoordinates[0]) + abs(currentCoordinates[1] - endCoordinates[1]))
+
+
 def drawSolution():
     file = open("output.txt", "w")
     for y in range(rowCount - 1):
@@ -256,9 +259,49 @@ def randomStep(currentCoordinates):
             return -1
         currentCoordinates = wholePath.pop()
         return currentCoordinates
-    # print('Current coords: ', currentCoordinates)
     currentCoordinates = available[random.randint(0, availableCount - 1)]
-    # print('Current coords: ', currentCoordinates)
+    visitedCoordinates.append(currentCoordinates)
+    wholePath.append(currentCoordinates)
+    return currentCoordinates
+
+
+def alwayMinStep(currentCoordinates):
+    available = []
+    distance = []
+    availableCount = 0
+    if currentCoordinates == endCoordinates:
+        print("Path found:")
+        print(visitedCoordinates)
+        checkSolution(visitedCoordinates)
+        return -1
+    right = [currentCoordinates[0], currentCoordinates[1] + 1]
+    left = [currentCoordinates[0], currentCoordinates[1] - 1]
+    up = [currentCoordinates[0] - 1, currentCoordinates[1]]
+    down = [currentCoordinates[0] + 1, currentCoordinates[1]]
+    if isPresent(right, wallCoordinates) == False and isVisited(visitedCoordinates, right) == False and right != startCoordinates:
+        available.append(right)
+        distance.append(heuristicFunction(right))
+        availableCount = availableCount + 1
+    if isPresent(left, wallCoordinates) == False and isVisited(visitedCoordinates, left) == False and left != startCoordinates:
+        available.append(left)
+        distance.append(heuristicFunction(left))
+        availableCount = availableCount + 1
+    if isPresent(up, wallCoordinates) == False and isVisited(visitedCoordinates, up) == False and up != startCoordinates:
+        available.append(up)
+        distance.append(heuristicFunction(up))
+        availableCount = availableCount + 1
+    if isPresent(down, wallCoordinates) == False and isVisited(visitedCoordinates, down) == False and down != startCoordinates:
+        available.append(down)
+        distance.append(heuristicFunction(down))
+        availableCount = availableCount + 1
+    if availableCount == 0:
+        if(len(wholePath) == 0):
+            print('No solution')
+            return -1
+        currentCoordinates = wholePath.pop()
+        return currentCoordinates
+    closest = distance.index(min(distance))
+    currentCoordinates = available[closest]
     visitedCoordinates.append(currentCoordinates)
     wholePath.append(currentCoordinates)
     return currentCoordinates
@@ -284,8 +327,8 @@ while run:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 while(currentCoordinates != -1):
-                    currentCoordinates = randomStep(currentCoordinates)
+                    currentCoordinates = alwayMinStep(currentCoordinates)
                     grid = makeGrid(rowCount, collumnCount, width)
-                    pygame.time.wait(1)
+                    pygame.time.wait(10)
                     draw(window, grid, rowCount, collumnCount, width)
 pygame.quit()
